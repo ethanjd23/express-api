@@ -18,10 +18,11 @@ function getAndRenderChirps() {
           };
         }); // Creating an array of objects from the JSON
         chirpsArray.pop(); // deleting nextid off each object
+        console.log(chirpsArray);
     
         for (const id in chirpsArray) {
-            if (id === 'nextid') return;
             let deleteBtn = $(`<button class="btn btn-danger btn-sm">Delete</button>`).click(() => {
+                console.log(id);
                 $.ajax({
                     type: "DELETE", 
                     url: `/api/chirps/${id}`
