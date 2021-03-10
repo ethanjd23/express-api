@@ -22,7 +22,7 @@ router.put('/:id?', (req, res) => {
 })
 
 router.delete('/:id?', (req, res) => {
-    chirpsStore.DeleteChirp(req.params.id);
+    chirpsStore.deleteChirp(req.params.id);
 })
 
 module.exports = router;
