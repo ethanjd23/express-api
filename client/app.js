@@ -1,30 +1,74 @@
 $(function () {
   // I read that this is the current syntax to write document.ready, I promise.
   console.log("script working");
-  $.get("/api/chirps", function (json) {
-    let ids = Object.keys(json);
+  getAndRenderChirps();
 
-    let chirpsArray = ids.map((id) => {
-      return {
-        id: id,
-        user: json[id].user,
-        message: json[id].message,
-      };
-    }); // Creating an array of objects from the JSON
-    chirpsArray.pop(); // deleting nextid off each object
-
-    chirpsArray
-      .slice(0)
-      .reverse() // This flips the order of the array, ik it's gross. 
-      .forEach((chirp) => {
-        $("#chirps").append(
-          `<div class="card m-3 col-4">
-        <p class="card-header">${chirp.user}</p>
-        <div class="card-body">
-            <h5 class="card-text">${chirp.message}</h5>
-        </div>
-    </div>`
-        );
-      });
-  });
+  $("#post-button").click(postNewChirp);
 });
+
+function getAndRenderChirps() {
+    $.get("/api/chirps", function (json) {
+        let ids = Object.keys(json);
+    
+        let chirpsArray = ids.map((id) => {
+          return {
+            id: id,
+            user: json[id].user,
+            message: json[id].message,
+          };
+        }); // Creating an array of objects from the JSON
+        chirpsArray.pop(); // deleting nextid off each object
+    
+        for (const id in chirpsArray) {
+            if (id === 'nextid') return;
+            let deleteBtn = $(`<button class="btn btn-danger btn-sm">Delete</button>`).click(() => {
+                $.ajax({
+                    type: "DELETE", 
+                    url: `/api/chirps/${id}`
+                }).then((response) => {
+                    console.log(response);
+                    $("#chirps").empty();
+                    getAndRenderChirps();
+                })
+            });
+            $(
+              `<div class="card m-3 col-4">
+            <p class="card-header">${chirpsArray[id].user}</p>
+            <div class="card-body">
+            <h5 class="card-text">${chirpsArray[id].message}</h5>            
+            </div>
+            </div>`
+            ).appendTo("#chirps").append(deleteBtn);
+      };
+
+        })};
+
+
+function postNewChirp() {
+    let newUsername = $("#usernameInput").val();
+    let newMessage = $("#messageInput").val();
+    let newChirp = { user: newUsername, message: newMessage };
+    $.ajax({
+        type: "POST",
+        url: "/api/chirps",
+        data: JSON.stringify(newChirp),
+        contentType: "application/json"
+    }).then(() => {
+        $("#chirps").empty();
+        getAndRenderChirps();
+    })
+    
+    $("#usernameInput").val('');
+    $("#messageInput").val('');
+}
+
+function deleteChirp(id) {
+    $.ajax({
+        type: "DELETE", 
+        url: `/api/chirps/${id}`
+    }).then((response) => {
+        console.log(response);
+        $("#chirps").empty();
+        getAndRenderChirps();
+    })
+}
